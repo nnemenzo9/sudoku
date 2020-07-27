@@ -4,9 +4,11 @@
 import basicsudoku as bs
 
 # Constants
+BRANCH_DIFFICULTY_SCORE = 0 # Based on branch factor difficulty 
 DIMENSIONS = 9
 SUBGRIDS = 3
 POSSIBLE_VALUES = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+
 
 # Numpy array will be filled with values hand (until another method can be found)
 # Basicsudoku is for printing the board, we can use a loop to fill the board with numpy values.
@@ -24,15 +26,15 @@ zeros = [
     ]
 
 board = [
-        [0, 0, 0, 3, 0, 0, 9, 0, 0],
-        [0, 2, 0, 0, 0, 1, 0, 0, 7],
-        [0, 0, 0, 0, 0, 0, 1, 5, 0],
-        [1, 5, 7, 0, 0, 0, 4, 0, 0],
-        [0, 9, 0, 0, 4, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 6, 0, 3, 0],
-        [0, 3, 0, 2, 0, 7, 0, 0, 0],
-        [5, 0, 9, 0, 0, 0, 8, 0, 0],
-        [6, 0, 0, 0, 0, 4, 5, 0, 0]
+        [1, 3, 0, 6, 8, 5, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 2],
+        [0, 6, 0, 0, 1, 9, 0, 3, 8],
+        [0, 0, 1, 0, 0, 0, 0, 4, 0],
+        [0, 5, 0, 4, 0, 3, 0, 0, 0],
+        [3, 0, 0, 8, 0, 0, 0, 0, 6],
+        [4, 2, 7, 5, 6, 0, 9, 0, 0],
+        [0, 0, 5, 0, 0, 2, 0, 8, 0],
+        [0, 8, 0, 0, 0, 7, 0, 0, 0]
     ]
 
 #MAIN FUNCTION
@@ -52,6 +54,9 @@ def main():
     formattedBoard.symbols = boardString
     print(formattedBoard)
 
+    # Print the branch-difficulty score
+    print("Difficulty score: " + str(BRANCH_DIFFICULTY_SCORE))
+
 """
 Basic algorithm:
 
@@ -70,6 +75,10 @@ def boardToString(board):
 
 # Board is a numpy array; solve() is only called one time
 def solve(board):
+    # Used to calculate the branching factor
+    global BRANCH_DIFFICULTY_SCORE
+    branching_factor = 1
+
     # It findEmptyCell returns 'none', there are no more empty cells and the program is complete
     # If find empty cell does not return none, we need to find new coordinates.
     if not findEmptyCell(board):
@@ -79,16 +88,17 @@ def solve(board):
 
 
     for value in range(1, 10):
-        # If value is valid in the certain cell it will place the value in the board and call solve again.
+        # If value is valid in the certain cell it will place the value in the board and call solve() again.
         if checkIfValid(board, coords, value):
             board[coords[0]][coords[1]] = value
 
-            # Recursive solving; if solve returns true (findEmptyCell returns true), the program is complete
-            # If solve does not return true
+            # Recursive solving; if solve() returns true (findEmptyCell returns true), the program is complete
             if solve(board):
+                BRANCH_DIFFICULTY_SCORE += (branching_factor - 1) ** 2
                 return True
             else:
-                # If solve is false, we backtrack.
+                # If solve is false (no possible value), we backtrack.
+                branching_factor += 1
                 board[coords[0]][coords[1]] = 0
 
     # At this point, we have gone through all possible values 
@@ -106,7 +116,7 @@ def findEmptyCell(board):
 def checkIfValid(board, coords, value):
     # Check columns
     for i in range(DIMENSIONS):
-            if value == board[i][coords[1]] and coords[0] != i:
+            if value == board[i][coords[1]] and coords[0] != i: # make sure we aren't checking the same cell
                 return False
 
     # Check rows
