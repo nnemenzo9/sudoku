@@ -10,17 +10,6 @@ def main():
     # Initialize global variables
     global_var.init()
 
-    # Print given puzzle 
-    print("\nGiven puzzle: ")
-    print_board(global_var.BOARD)
-
-    # Solve given puzzle
-    s.solve(global_var.BOARD)
-
-    # Print formatted solution to given puzzle
-    print("\nSolved puzzle: ")
-    print_board(global_var.BOARD)
-
     # Generate a new solution grid
     sg.generate_grid(global_var.NEW_BOARD)
 
@@ -36,11 +25,24 @@ def main():
     print_board(global_var.NEW_BOARD)
 
 
+    # Print given puzzle 
+    print("\nGiven puzzle: ")
+    print_board(global_var.NEW_BOARD)
+
+    # Solve given puzzle
+    s.solve(global_var.NEW_BOARD)
+
+    # Print formatted solution to given puzzle
+    print("\nSolved puzzle: ")
+    print_board(global_var.NEW_BOARD)
+
+
+
 # Solve a sudoku puzzle
 def print_board(board):
     # Convert array to usable string for basicsudoku
     board_string = board_to_string(board)
-    formatted_board = bs.SudokuBoard()
+    formatted_board = bs.SudokuBoard(strict = False)
     formatted_board.symbols = board_string
     print(formatted_board)
 

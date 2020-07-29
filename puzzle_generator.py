@@ -1,14 +1,29 @@
 # Takes generated puzzle and strips away values, making sure the puzzle is still uniquely solvable
 
-# TODO: PUZZLE GENERATION DOES NOT CONSIDER UNIQUENESS, BASICALLY ONLY STRIPS VALUES.
+# TODO: Change generation so it generates based on branch-factor difficulty.
+
+"""
+Stripping values without having to modify the solver too much: 
+- For a certain amount of iterations: 
+    - Take in the full solution grid
+    - Strip a random value from the board and save the value
+    - Run solve() on the board with the condition that the value we took out can't be used on the SQUARE THAT IT GOT TAKEN OUT OF
+        - If solve() returns true, it has found a solution that differs from our original solution.
+            - Therefore, we must put the value back because it compromises the 'uniqueness' of the board
+        - If solve() returns false, it hasn't found a solution.
+            - We can take the value out 
+
+
+"""
 
 import random as r
 import global_var
 import solving as s
+from copy import copy, deepcopy
 
 # Based on iterations, the more iterations, the harder the puzzle will be
 def strip_values(board):
-    max_iterations = 42
+    max_iterations = 48
     iterations = 0
     while iterations < max_iterations:
         # Gets random coordinates that are filled, saves the value inside and removes that value from the board
@@ -17,21 +32,21 @@ def strip_values(board):
         board[random_coords[0]][random_coords[1]] = 0
 
         # If a solution has been found with new constraints, put the value back
-        if mod_solver(board, removed_value):
+        if mod_solver(board, removed_value, random_coords):
             board[random_coords[0]][random_coords[1]] = removed_value
 
             # While mod_solver() finds a solution, keep picking random coords and taking values out
-            while mod_solver(board, removed_value):
+            while mod_solver(board, removed_value, random_coords): 
                 random_coords = get_random_filled_cell(global_var.NEW_BOARD)
                 removed_value = board[random_coords[0]][random_coords[1]]
                 board[random_coords[0]][random_coords[1]] = 0
 
                 # If mod_solver() returns false, add 1 to iterations and break
-                if not mod_solver(board, removed_value):
+                if not mod_solver(board, removed_value, random_coords):
                     iterations += 1
                     break
 
-        # No solution has been found (puzzle is still uniquely solvable)
+        # No solution has been found (puzzle is still uniquely solvable and we permanently strip the value)
         else: 
             iterations += 1
 
@@ -50,47 +65,32 @@ def get_random_filled_cell(board):
     else:
         return random_coords
 
-# Checks a solution grid w/ cells removed with the condition that the value that was removed cannot be placed
-# Only has to check the first cell for the condition, normal solving after that
-cells_counted = 0
-def mod_solver(board, removed_value):
-    global cells_counted
 
-    if not s.find_empty_cell(board):
+def mod_solver(board, removed_value, removed_value_coords):
+
+    # Copy the board so we don't change the actual board
+    board_copy = deepcopy(board)
+
+    if not s.find_empty_cell(board_copy):
         return True
     else: 
-        coords = s.find_empty_cell(board)
+        coords = s.find_empty_cell(board_copy)
 
-    for value in range(1, 10):
-        
-        # Check if the value we're inputting is valid
-        if s.check_if_valid(board, coords, value):
+    # Generate the possible values in a cell
+    VALUES = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
-            # If iterations is 0, we have to exclude the value in condition checking
-            if cells_counted > 0 and value != removed_value:
-                board[coords[0]][coords[1]] = value
-                
-                # Each time we can insert a value, we add one to iterations, since the function moves on to the next square.
-                cells_counted += 1
+    # If solve() is currently on the same square that the the value recently got removed, we can't place that value back in.
+    if coords == removed_value_coords:
+        VALUES.remove(removed_value)
 
-                if mod_solver(board, removed_value):
-                    return True
-                else:
-                    # Each time we backtrack, we remove a value
-                    cells_counted -= 1
+    # Run through possible values
+    for value in VALUES:
+        if s.check_if_valid(board_copy, coords, value):
+            board_copy[coords[0]][coords[1]] = value
 
-                    board[coords[0]][coords[1]] = 0
-            # If iterations is not 0, don't exclude the value in condition checking
-            # If we are on the first cell BUT value != to the removed value, break out of the loop
-            elif cells_counted == 0:
-                break
-            else: 
-                board[coords[0]][coords[1]] = value 
-                cells_counted += 1
-                if mod_solver(board, removed_value):
-                    return True
-                else:
-                    cells_counted -= 1
-                    board[coords[0]][coords[1]] = 0
-                    print(cells_counted)
+            if mod_solver(board_copy, removed_value, removed_value_coords):
+                return True
+            else:
+                board_copy[coords[0]][coords[1]] = 0
+    
     return False

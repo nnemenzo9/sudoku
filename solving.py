@@ -1,12 +1,9 @@
 # Contains solving functions
 
 # TODO: Optimize solving
-# TODO: Calculate difficulty scores
+# TODO: Calculate difficulty scores using branch-factor
 
 import global_var
-
-# Constants
-POSSIBLE_VALUES = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 # Board is a numpy array; solve() is only called one time
 def solve(board):    
@@ -33,13 +30,47 @@ def solve(board):
     # At this point, we have gone through all possible values 
     return False
 
-# Function that finds the empty cell with the least candidate values 
+# Function that checks if there are still empty cells in the grid
+def check_grid(board):
+    for r in range(global_var.DIMENSIONS):
+        for c in range(global_var.DIMENSIONS):
+            if board[r][c] == 0:
+                return True
+    return False
+
+# Function that finds the first empty cell 
 def find_empty_cell(board):
     for r in range(global_var.DIMENSIONS):
         for c in range(global_var.DIMENSIONS):
             if board[r][c] == 0:
                 return (r, c)
-    return None
+    return None 
+
+"""
+def get_candidate_values(board, coords):
+    POSSIBLE_VALUES = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+    # Go through columns
+    for i in range(global_var.DIMENSIONS):
+        if board[i][coords[1]] in POSSIBLE_VALUES:
+            POSSIBLE_VALUES.remove(board[i][coords[1]])
+
+    # Go through rows
+    for i in range(global_var.DIMENSIONS):
+        if board[coords[0]][i] in POSSIBLE_VALUES:
+            POSSIBLE_VALUES.remove(board[coords[0]][i])
+
+    # Go through subgrid
+    starting_r = (coords[0] // global_var.SUBGRIDS) * global_var.SUBGRIDS
+    starting_c = (coords[1] // global_var.SUBGRIDS) * global_var.SUBGRIDS
+    for r in range(global_var.SUBGRIDS):
+        for c in range(global_var.SUBGRIDS):
+            if board[starting_r + r][starting_c + c] in POSSIBLE_VALUES:
+                POSSIBLE_VALUES.remove(board[starting_r + r][starting_c + c])
+
+    return POSSIBLE_VALUES
+"""
+
 
 # Return true if no matching value found, false if matching value found.
 # 'coords' is a tuple that holds the coordinates of a certain cell in (row, column).
@@ -57,8 +88,8 @@ def check_if_valid(board, coords, value):
     # Check subgrids
     starting_r = (coords[0] // global_var.SUBGRIDS) * global_var.SUBGRIDS
     starting_c = (coords[1] // global_var.SUBGRIDS) * global_var.SUBGRIDS
-    for r in range(3):
-        for c in range(3):
+    for r in range(global_var.SUBGRIDS):
+        for c in range(global_var.SUBGRIDS):
             if board[starting_r + r][starting_c + c] == value and (r, c) != coords:
                 return False
     
