@@ -35,6 +35,7 @@ def main():
     # Print formatted solution to given puzzle
     print("\nSolved puzzle: ")
     print_board(global_var.NEW_BOARD)
+    print(s.BRANCH_DIFFICULTY_SCORE)
 
 
 

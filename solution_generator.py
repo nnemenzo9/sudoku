@@ -9,10 +9,10 @@ import global_var
 
 # Variation on solving algorithm to generate solution grid; needs empty input
 def generate_grid(board):
-    if not s.find_empty_cell(board):
+    if not s.find_best_empty_cell(board):
         return True
     else: 
-        coords = s.find_empty_cell(board)
+        coords = s.find_best_empty_cell(board)
 
     # Generate the possible values in a cell
     POSSIBLE_VALUES = {1, 2, 3, 4, 5, 6, 7, 8, 9}

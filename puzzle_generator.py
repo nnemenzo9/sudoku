@@ -23,7 +23,7 @@ from copy import copy, deepcopy
 
 # Based on iterations, the more iterations, the harder the puzzle will be
 def strip_values(board):
-    max_iterations = 48
+    max_iterations = 49
     iterations = 0
     while iterations < max_iterations:
         # Gets random coordinates that are filled, saves the value inside and removes that value from the board
@@ -71,10 +71,10 @@ def mod_solver(board, removed_value, removed_value_coords):
     # Copy the board so we don't change the actual board
     board_copy = deepcopy(board)
 
-    if not s.find_empty_cell(board_copy):
+    if not s.find_best_empty_cell(board_copy):
         return True
     else: 
-        coords = s.find_empty_cell(board_copy)
+        coords = s.find_best_empty_cell(board_copy)
 
     # Generate the possible values in a cell
     VALUES = {1, 2, 3, 4, 5, 6, 7, 8, 9}
